@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Authorization App</title>
+    <link rel="icon" href="{% static 'assets/fonts/time_icon.svg' %}">
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kaushan+Script">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700">
+    <link rel="stylesheet" href="{% static 'assets/fonts/font-awesome.min.css' %}">
+</head>
+
+<body id="page-top">
+   
+    {% block content%}
+
+    <section id="contact" style="background-image:url({% static 'assets/img/map-image.png' %} );">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                </div>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3">
+                    <form id="contactForm" name="contactForm">
+                        <div class="form">
+                            <div class="col-lg-12 text-center">
+                                <label for="email" style="color: white;">Email *</label>
+                                <div class="form-group"><input class="form-control" type="email" id="email" required><small class="form-text text-danger help-block lead"></small>
+                                <span class="error"><p style="color: white;" id="email_error"></p></span></div>
+                                <label for="password" style="color: white;">Password *</label>
+                                <div class="form-group"><input class="form-control" id="password" name="password" type="password" required><small class="form-text text-danger help-block lead"></small>
+                                <span class="error"><p style="color: white;" id="date_error"></p></span></div>
+
+                            </div>
+                            <div class="col">
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="col-lg-12 text-center">
+                                <div id="success"></div><button class="btn btn-primary btn-xl text-uppercase" id="sendMessageButton" type="submit">Login</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    {% endblock content %}
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"><span class="copyright">RS 2021</span></div>
+                <div class="col-md-4">
+                    <ul class="list-inline social-buttons">
+                        <li class="list-inline-item"><a href="https://github.com/thesaintraphael"><i class="fa fa-github"></i></a></li>
+                        <li class="list-inline-item"><a href="https://www.facebook.com/thesaintraphael/"><i class="fa fa-facebook"></i></a></li>
+                        <li class="list-inline-item"><a href="https://www.linkedin.com/in/rafasalimov/"><i class="fa fa-linkedin"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+
+
+    <script>
+
+        function remove_warning(){
+            document.getElementById(this.id + "_error").innerHTML = ""
+        }
+
+        document.getElementById("email").onkeyup = remove_warning;
+        document.getElementById("date").onkeyup = remove_warning;
+        document.getElementById("content").onkeyup = remove_warning;
+
+        function get_token(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = cookies[i].trim();
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+            }
+
+        var csrftoken = get_token('csrftoken');
+
+
+        let form = document.getElementById("contactForm");
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            var url = '/create_message/';
+            var receiver = document.getElementById("email").value;
+            var date = document.getElementById("date").value;
+            var content = document.getElementById("content").value;
+
+
+            var submit = true;
+            console.log(receiver, date, content)
+
+            if(receiver == null || receiver == ''){
+            let emailError = "Please enter your email address";
+            document.getElementById("email_error").innerHTML = emailError;
+            submit = false;
+            }
+
+            if(date == null || date == ''){
+                let dateError = "Please enter date you want to get a message";
+                document.getElementById("date_error").innerHTML = dateError;
+                submit = false;
+            }
+
+
+            if(content == null || content == ''){
+                let contentError = "Please add your message";
+                console.log(contentError)
+                document.getElementById("content_error").innerHTML = contentError;
+                submit = false;
+            }
+
+            if(submit){
+
+                fetch(url, {
+                method: "POST",
+                headers:{
+                    'Content-type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body: JSON.stringify({'receiver': receiver, 'send_date': date, 'content': content})
+            }
+            )
+
+            .then((resp) => resp.json())
+            .then(function(data){
+                console.log("Data:", data)
+                document.getElementById('contactForm').reset();
+                var wrapperNotification = document.getElementById('notification');
+                wrapperNotification.innerHTML = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                                   Your message is sent to the future!
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>`
+            })
+
+            }
+        })
+
+    </script>
+
+
+
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+</body>
+
+</html>
